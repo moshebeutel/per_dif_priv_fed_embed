@@ -4,8 +4,9 @@ import torch.cuda
 import wandb
 from common.config import Config
 from dataset.create_data_loaders import get_data_loaders
-from differential_privacy.get_private_model import get_private_model
+# from differential_privacy.get_private_model import get_private_model
 from models.mlp_net import MlpNet
+from models.conv_net import ConvNet
 from train.utils import get_loss_and_opt, save_model, train_method
 
 
@@ -14,7 +15,8 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 def single_train(batch_size, learning_rate, epochs=50, save_final_model=False):
     trainloader, testloader = get_data_loaders(dataset_name=Config.DATASET, batch_size=batch_size)
     print('train loader', len(trainloader))
-    net = MlpNet()  # ConvNet().to(device)
+    # net = MlpNet()  # ConvNet().to(device)
+    net = ConvNet()
     net.to(device)
     criterion, optimizer = get_loss_and_opt(net, learning_rate=learning_rate)
 
@@ -38,9 +40,9 @@ def run_single_train():
     GRAD_OR_SIGN = 'sgd'
     assert GRAD_OR_SIGN in ['sgd', 'sign', 'grad', 'sgd_dp', 'sgd_dp_sign', 'sgd_sign_dp']
 
-    BATCH_SIZE = 32
-    EPOCHS = 10
-    LEARNING_RATE = 0.001
+    BATCH_SIZE = 64
+    EPOCHS = 50
+    LEARNING_RATE = 0.01
 
     wandb.init(project="emg_gp_moshe", entity="emg_diff_priv",
                name=f'SampleBatchDist lr {LEARNING_RATE} batch size {BATCH_SIZE}')

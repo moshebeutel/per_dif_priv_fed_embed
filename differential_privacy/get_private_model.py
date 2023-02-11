@@ -1,4 +1,4 @@
-from opacus import PrivacyEngine
+# from opacus import PrivacyEngine
 from differential_privacy.privacy_engines.custom_privacy_engine import CustomPrivacyEngine
 from differential_privacy.privacy_optimizers.random_grad_dp_optimizer import RandomGradDPOptimizer
 

@@ -3,12 +3,12 @@ import inspect
 
 
 class Config:
-    LOG_FOLDER = '/home/user/GIT/federated_private_emg/log'
+    LOG_FOLDER = '/home/moshe/GIT/per_dif_priv_fed_embed/log'
     HDF_FILES_DIR = '../putemg-downloader/Data-HDF5'
     FEATURES_DATAFRAMES_DIR = 'features_dataframes'
     DATASET = 'cifar10'
-    DATASETS_ROOT_PATH = '/home/user1/data/datasets/'
-    SAVED_MODELS_DIR = '/home/user1/pycharm-community-2022.3/projects/cfar_privacy/saved_models/'
+    DATASETS_ROOT_PATH = '/home/moshe/data/datasets/cifar'
+    SAVED_MODELS_DIR = '/home/moshe/saved_models/cifar/mlp'
     # DEVICE = 'cpu'
     USE_BATCHNORM = False
     USE_DROPOUT = False

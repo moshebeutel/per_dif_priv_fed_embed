@@ -10,6 +10,8 @@ from tqdm import tqdm
 # from tsne_torch import TorchTSNE as TSNE
 from common.config import Config
 import matplotlib.pyplot as plt
+import numpy as np
+
 WANDB_LOG = {}
 LOG = {}
 
@@ -30,7 +32,7 @@ def train_single_epoch(trainloader, net, criterion, optimizer):
     correct = 0
     total = 0
 
-    device = 'cuda'   #  net.device
+    device = 'cpu'  # net.device
     max_prob_mean = torch.zeros(100).reshape(10, -1).to(device)
     labels_counter = torch.zeros(10).to(device)
 
@@ -72,7 +74,7 @@ def eval_net(testloader, net):
     net.eval()
     correct = 0
     total = 0
-    device = 'cuda'  # net.device
+    device = 'cpu'  # net.device
     # max_prob_mean = 0
     max_prob_mean = torch.zeros(100).reshape(10, -1).to(device)
     labels_counter = torch.zeros(10).to(device)
@@ -103,7 +105,9 @@ def eval_net(testloader, net):
 
 def apply_tsne(trainloader, testloader, net):
     net.eval()
-    device = net.device
+    device = 'cpu' #  net.device
+    all_labels = []
+    all_outputs = np.zeros((1, 10))
     with torch.no_grad():
         for data in testloader:
             inputs, labels = data
@@ -111,11 +115,14 @@ def apply_tsne(trainloader, testloader, net):
             labels = labels.to(device)
             # calculate outputs by running images through the network
             outputs = net(inputs)
-            X_emb = TSNE(n_components=2, perplexity=30, n_iter=1000, verbose=True).fit_transform(outputs)
-            plt.scatter(X_emb[:,0], X_emb[:,1], c=)
 
+            all_labels.extend(labels.tolist())
+            all_outputs = np.append(all_outputs, outputs, axis=0)
 
-
+    print(all_outputs.shape)
+    emb = TSNE(n_components=2, perplexity=30, n_iter=250, verbose=True).fit_transform(all_outputs[1:])
+    plt.scatter(emb[:, 0], emb[:, 1], c=all_labels)
+    plt.show()
 
 
 def train_method(trainloader, testloader, net, criterion, optimizer, epochs=50, save_model_every=100):
