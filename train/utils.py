@@ -1,4 +1,4 @@
-from datetime import time
+import time
 
 import torch
 import torch.optim as optim
@@ -27,12 +27,10 @@ def save_model(model, path):
     torch.save(model, f'{path}.pt')
 
 
-def train_single_epoch(trainloader, net, criterion, optimizer):
+def train_single_epoch(trainloader, net, criterion, optimizer, device):
     net.train()
     correct = 0
     total = 0
-
-    device = 'cpu'  # net.device
     max_prob_mean = torch.zeros(100).reshape(10, -1).to(device)
     labels_counter = torch.zeros(10).to(device)
 
@@ -43,7 +41,7 @@ def train_single_epoch(trainloader, net, criterion, optimizer):
         labels = labels.to(device)
 
         optimizer.zero_grad()
-        outputs = net(inputs)
+        outputs, centroids = net(inputs)
         loss = criterion(outputs, labels)
         loss.backward()
 
@@ -70,11 +68,10 @@ def train_single_epoch(trainloader, net, criterion, optimizer):
         LOG[f'max_prob_mean_{i}'] = max_prob_mean[i] / labels_counter[i]
 
 
-def eval_net(testloader, net):
+def eval_net(testloader, net, device):
     net.eval()
     correct = 0
     total = 0
-    device = 'cpu'  # net.device
     # max_prob_mean = 0
     max_prob_mean = torch.zeros(100).reshape(10, -1).to(device)
     labels_counter = torch.zeros(10).to(device)
@@ -85,7 +82,7 @@ def eval_net(testloader, net):
             inputs = inputs.to(device)
             labels = labels.to(device)
             # calculate outputs by running images through the network
-            outputs = net(inputs)
+            outputs, centroids = net(inputs)
             # the class with the highest energy is what we choose as prediction
             max_probs, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
@@ -103,10 +100,27 @@ def eval_net(testloader, net):
     #                                                    LOG[f'max_prob_mean_{i}'].reshape(1, -1))
 
 
-def apply_tsne(trainloader, testloader, net):
+def apply_tsne(trainloader, testloader, net, device):
     net.eval()
-    device = 'cpu' #  net.device
-    all_labels = []
+
+    all_labels_train = []
+    all_outputs = np.zeros((1, 10))
+    with torch.no_grad():
+        for data in trainloader:
+            inputs, labels = data
+            inputs = inputs.to(device)
+            labels = labels.to(device)
+            # calculate outputs by running images through the network
+            outputs = net(inputs)
+
+            all_labels_train.extend(labels.tolist())
+            all_outputs = np.append(all_outputs, outputs.cpu().numpy(), axis=0)
+
+    emb_train = TSNE(n_components=2, perplexity=30, n_iter=250, verbose=True).fit_transform(all_outputs[1:])
+    # plt.scatter(emb[:, 0], emb[:, 1], c=all_labels)
+    # plt.show()
+
+    all_labels_test = []
     all_outputs = np.zeros((1, 10))
     with torch.no_grad():
         for data in testloader:
@@ -116,19 +130,24 @@ def apply_tsne(trainloader, testloader, net):
             # calculate outputs by running images through the network
             outputs = net(inputs)
 
-            all_labels.extend(labels.tolist())
-            all_outputs = np.append(all_outputs, outputs, axis=0)
+            all_labels_test.extend(labels.tolist())
+            all_outputs = np.append(all_outputs, outputs.cpu().numpy(), axis=0)
 
     print(all_outputs.shape)
-    emb = TSNE(n_components=2, perplexity=30, n_iter=250, verbose=True).fit_transform(all_outputs[1:])
-    plt.scatter(emb[:, 0], emb[:, 1], c=all_labels)
+    emb_test = TSNE(n_components=2, perplexity=30, n_iter=250, verbose=True).fit_transform(all_outputs[1:])
+
+    fig, (ax_train, ax_test) = plt.subplots(1, 2, figsize=(10, 10))
+    ax_train.scatter(emb_train[:, 0], emb_train[:, 1], c=all_labels_train)
+    ax_train.set_title('Train')
+    ax_test.scatter(emb_test[:, 0], emb_test[:, 1], c=all_labels_test)
+    ax_test.set_title('Test')
     plt.show()
 
 
-def train_method(trainloader, testloader, net, criterion, optimizer, epochs=50, save_model_every=100):
+def train_method(trainloader, testloader, net, criterion, optimizer, device, epochs=50, save_model_every=100):
     for epoch in tqdm(range(epochs)):
-        train_single_epoch(trainloader, net, criterion, optimizer)
-        eval_net(testloader, net)
+        train_single_epoch(trainloader, net, criterion, optimizer, device=device)
+        eval_net(testloader, net, device=device)
 
         wandb.log(WANDB_LOG)
 
@@ -136,4 +155,4 @@ def train_method(trainloader, testloader, net, criterion, optimizer, epochs=50, 
             filename_prefix = f'{Config.SAVED_MODELS_DIR}model_{time.asctime()}_epoch_{epoch}'
             save_model(model=net, path=filename_prefix)
 
-    apply_tsne(trainloader, testloader, net)
+    # apply_tsne(trainloader, testloader, net, device=device)
