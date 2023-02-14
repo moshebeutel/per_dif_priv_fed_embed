@@ -5,10 +5,9 @@ import torch.optim as optim
 import torch.nn as nn
 import wandb
 from sklearn.manifold import TSNE
-from torch.distributions import kl_divergence
 from tqdm import tqdm
 # from tsne_torch import TorchTSNE as TSNE
-from common.config import Config
+from per_dif_priv_fed_embed.common.config import Config
 import matplotlib.pyplot as plt
 import numpy as np
 

@@ -2,13 +2,10 @@ import argparse
 import time
 import torch.cuda
 import wandb
-from common.config import Config
-from dataset.create_data_loaders import get_data_loaders
-from differential_privacy.get_private_model import get_private_model
-from models.conv_net_with_centroids import ConvNetWithCentroids
-from models.mlp_net import MlpNet
-from models.conv_net import ConvNet
-from train.utils import get_loss_and_opt, save_model, train_method
+from per_dif_priv_fed_embed.common import Config
+from per_dif_priv_fed_embed.dataset.create_data_loaders import get_data_loaders
+from per_dif_priv_fed_embed.models import ConvNetWithCentroids
+from per_dif_priv_fed_embed.train.utils import get_loss_and_opt, save_model, train_method
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 

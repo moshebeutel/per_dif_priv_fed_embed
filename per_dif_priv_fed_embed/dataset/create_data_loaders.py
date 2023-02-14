@@ -4,7 +4,7 @@ import torch.utils.data
 import torchvision
 from torchvision.transforms import transforms
 
-from common.config import Config
+from per_dif_priv_fed_embed.common import Config
 
 
 class DatasetsCreationRepository:

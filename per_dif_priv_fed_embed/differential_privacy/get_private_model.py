@@ -1,6 +1,4 @@
 from opacus import PrivacyEngine
-from differential_privacy.privacy_engines.custom_privacy_engine import CustomPrivacyEngine
-from differential_privacy.privacy_optimizers.random_grad_dp_optimizer import RandomGradDPOptimizer
 
 
 def get_private_model(model, optimizer, loader, batch_size):
