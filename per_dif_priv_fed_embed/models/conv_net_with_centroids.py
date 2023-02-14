@@ -12,8 +12,8 @@ class ConvNetWithCentroids(nn.Module):
         self.conv2 = nn.Conv2d(6, 16, 5)
         self.fc1 = nn.Linear(16 * 5 * 5, 120)
         self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 10)
-        self.centroids = nn.parameter.Parameter(data=torch.zeros((10,)).float(), requires_grad=True)
+        self.fc3 = nn.Linear(84, 20)
+        self.centroids = nn.parameter.Parameter(data=torch.zeros((10, 2)).float(), requires_grad=True)
 
         self.apply(self._init_weights)
 
@@ -35,8 +35,8 @@ class ConvNetWithCentroids(nn.Module):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
-        x = - torch.square(torch.norm(x-self.centroids)) / 2.0
-        x = F.softmax(x)
+        x = - torch.square(torch.linalg.norm(x.reshape(-1, 10, 2)-self.centroids, dim=-1, keepdim=True)) / 2
+        x = F.softmax(x, dim=1).squeeze()
         return x, self.centroids
 
 # Net = torchvision.models.resnet18(pretrained=True)

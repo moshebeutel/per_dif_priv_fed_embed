@@ -1,3 +1,4 @@
+import os
 import time
 
 import torch
@@ -24,6 +25,13 @@ def get_loss_and_opt(net, learning_rate):
 def save_model(model, path):
     torch.save(model.state_dict(), f'{path}_state_dict.pt')
     torch.save(model, f'{path}.pt')
+
+
+def plot_centroids(centroids, epoch, figures_dir):
+    plt.scatter(centroids[:, 0], centroids[:, 1])
+    plt.title(f'Centroids epoch {epoch}')
+    filename_prefix = f'{figures_dir}/epoch_{epoch}'
+    plt.savefig(f'{filename_prefix}.png')
 
 
 def train_single_epoch(trainloader, net, criterion, optimizer, device):
@@ -65,6 +73,7 @@ def train_single_epoch(trainloader, net, criterion, optimizer, device):
     # WANDB_LOG['train_max_prob'] = max_prob_mean / total
     for i in range(10):
         LOG[f'max_prob_mean_{i}'] = max_prob_mean[i] / labels_counter[i]
+    LOG['centroids'] = centroids.detach().cpu().numpy()
 
 
 def eval_net(testloader, net, device):
@@ -143,15 +152,24 @@ def apply_tsne(trainloader, testloader, net, device):
     plt.show()
 
 
-def train_method(trainloader, testloader, net, criterion, optimizer, device, epochs=50, save_model_every=100):
+def train_method(trainloader, testloader, net, criterion, optimizer, device, epochs=50, save_model_every=100,
+                 plot_centroids_every=1):
+    figures_dir = f'{Config.SAVED_FIGURES_DIR}/{time.asctime()}'
+    os.mkdir(figures_dir)
+
     for epoch in tqdm(range(epochs)):
         train_single_epoch(trainloader, net, criterion, optimizer, device=device)
         eval_net(testloader, net, device=device)
 
         wandb.log(WANDB_LOG)
 
+        if plot_centroids_every > 0 and epoch % plot_centroids_every == (plot_centroids_every - 1):
+            plot_centroids(LOG['centroids'], epoch, figures_dir)
+
         if save_model_every > 0 and epoch % save_model_every == (save_model_every - 1):
             filename_prefix = f'{Config.SAVED_MODELS_DIR}model_{time.asctime()}_epoch_{epoch}'
             save_model(model=net, path=filename_prefix)
 
     # apply_tsne(trainloader, testloader, net, device=device)
+
+

@@ -2,9 +2,9 @@ import argparse
 import time
 import torch.cuda
 import wandb
-from per_dif_priv_fed_embed.common import Config
+from per_dif_priv_fed_embed.common.config import Config
 from per_dif_priv_fed_embed.dataset.create_data_loaders import get_data_loaders
-from per_dif_priv_fed_embed.models import ConvNetWithCentroids
+from per_dif_priv_fed_embed.models.conv_net_with_centroids import ConvNetWithCentroids
 from per_dif_priv_fed_embed.train.utils import get_loss_and_opt, save_model, train_method
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -26,6 +26,7 @@ def single_train(batch_size, learning_rate, epochs=50, save_final_model=False):
     train_method(trainloader=priv_loader, testloader=testloader, net=priv_model, criterion=criterion,
                  optimizer=priv_optimizer, epochs=epochs, device=device,
                  save_model_every=100)
+
     if save_final_model:
         filename_prefix = \
             f'{Config.SAVED_MODELS_DIR}' \

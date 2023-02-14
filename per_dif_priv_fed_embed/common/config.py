@@ -8,7 +8,8 @@ class Config:
     FEATURES_DATAFRAMES_DIR = 'features_dataframes'
     DATASET = 'cifar10'
     DATASETS_ROOT_PATH = '/home/moshe/data/datasets/cifar'
-    SAVED_MODELS_DIR = '/home/moshe/saved_models/cifar/mlp'
+    SAVED_MODELS_DIR = '/home/moshe/saved_models/cifar/convnet_with_centroids'
+    SAVED_FIGURES_DIR = '/home/moshe/saved_figures/centroids'
     # DEVICE = 'cpu'
     USE_BATCHNORM = False
     USE_DROPOUT = False
